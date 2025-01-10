@@ -14,7 +14,7 @@ if (!isset($_SESSION['username'])) {
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>My Daily Journal | Admin</title>
+    <title>My Daily Journal | Lena</title>
     <link rel="icon" href="img/logo.png" />
     <link
     rel="stylesheet"

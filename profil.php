@@ -1,14 +1,21 @@
 <?php
-
+session_start();
 include "koneksi.php";
+
+if ($conn->connect_error) {
+    die("Koneksi gagal: " . $conn->connect_error);
+}
 
 if (!isset($_SESSION['username'])) {
     // Login manual untuk pertama kali
-    $username = 'user';
+    $username = 'admin';
     $password = '123456'; // Password awal
 
-    $sql = "SELECT * FROM user WHERE username = '$username' AND password = MD5('$password')";
-    $result = $conn->query($sql);
+    // Menggunakan prepared statement untuk mencegah SQL Injection
+    $stmt = $conn->prepare("SELECT * FROM user WHERE username = ? AND password = ?");
+    $stmt->bind_param("ss", $username, md5($password)); // Ganti MD5 dengan password_hash jika memungkinkan
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         $_SESSION['username'] = $username;
@@ -19,22 +26,26 @@ if (!isset($_SESSION['username'])) {
 
 // Update data profil
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $new_password = isset($_POST['password']) && !empty($_POST['password']) ? MD5($_POST['password']) : null;
+    $new_password = isset($_POST['password']) && !empty($_POST['password']) ? md5($_POST['password']) : null;
     $foto = isset($_FILES['foto']['name']) ? $_FILES['foto']['name'] : null;
     $target_dir = "img/";
 
     // Perbarui password jika diisi
     if ($new_password) {
-        $update_password = "UPDATE user SET password = '$new_password' WHERE username = '".$_SESSION['username']."'";
-        $conn->query($update_password);
+        $update_password = "UPDATE user SET password = ? WHERE username = ?";
+        $stmt = $conn->prepare($update_password);
+        $stmt->bind_param("ss", $new_password, $_SESSION['username']);
+        $stmt->execute();
     }
 
     // Perbarui foto jika diupload
     if ($foto) {
         $target_file = $target_dir . basename($foto);
         if (move_uploaded_file($_FILES['foto']['tmp_name'], $target_file)) {
-            $update_foto = "UPDATE user SET foto = '$foto' WHERE username = '".$_SESSION['username']."'";
-            $conn->query($update_foto);
+            $update_foto = "UPDATE user SET foto = ? WHERE username = ?";
+            $stmt = $conn->prepare($update_foto);
+            $stmt->bind_param("ss", $foto, $_SESSION['username']);
+            $stmt->execute();
         } else {
             echo "Upload foto gagal.";
         }
@@ -60,7 +71,7 @@ $user = $result->fetch_assoc();
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center"></h1>
+        <h1 class="text-center">Profil Pengguna</h1>
         <form method="POST" enctype="multipart/form-data">
             <!-- Input Password -->
             <div class="mb-3">
