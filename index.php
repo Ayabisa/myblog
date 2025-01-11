@@ -30,7 +30,7 @@ include "koneksi.php";
                 <a class="nav-link" href="#article">Article</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#gallery">Gallery</a>
+                <a class="nav-link" href="#galery">Galery</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="#schedule">Schedule</a>
